@@ -38,10 +38,7 @@ def download_spacy_model():
             spacy.load("en_core_web_sm")
             print("  [OK] spaCy model 'en_core_web_sm' is already installed.")
         except Exception:
-            print("Downloading 'en_core_web_sm'...")
-            import subprocess
-            subprocess.run([sys.executable, "-m", "spacy", "download", "en_core_web_sm"], check=True)
-            print("  [OK] 'en_core_web_sm' downloaded successfully.")
+            print("Downloading 'en_core_web_sm' via requirements.txt is expected.")
     except ImportError:
         print("spaCy not installed yet; NLTK fallback mode is fully functional.")
 
