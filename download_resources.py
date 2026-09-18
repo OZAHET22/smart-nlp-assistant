@@ -38,7 +38,14 @@ def download_spacy_model():
             spacy.load("en_core_web_sm")
             print("  [OK] spaCy model 'en_core_web_sm' is already installed.")
         except Exception:
-            print("Downloading 'en_core_web_sm' via requirements.txt is expected.")
+            print("Downloading 'en_core_web_sm' via spacy.cli...")
+            try:
+                from spacy.cli import download
+                download("en_core_web_sm")
+                print("  [OK] 'en_core_web_sm' downloaded successfully.")
+            except Exception as e:
+                print(f"  [!] Warning: Failed to download spaCy model via cli: {e}")
+                print("      App will fallback to NLTK automatically.")
     except ImportError:
         print("spaCy not installed yet; NLTK fallback mode is fully functional.")
 
