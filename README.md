@@ -1,5 +1,11 @@
 # Smart Reading & Writing Assistant
 
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black?style=for-the-badge&logo=vercel)](https://smartassistant-ten.vercel.app)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/OZAHET22/smart-nlp-assistant)
+[![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black?style=for-the-badge&logo=next.js)](https://smartassistant-ten.vercel.app)
+
+> **Live Production App:** [https://smartassistant-ten.vercel.app](https://smartassistant-ten.vercel.app)
+
 A lightweight NLP pipeline that accepts raw, messy student text and processes it through five classical NLP stages — producing spell corrections, syntactic parses, semantic analysis, discourse relations, and pragmatic inferences — all wired as one continuous, testable system.
 
 ## Architecture
