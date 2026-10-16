@@ -8,6 +8,8 @@ by scoring each variant against its surrounding context.
 
 from __future__ import annotations
 
+import os
+import pickle
 import logging
 from collections import Counter
 
@@ -61,9 +63,35 @@ class NgramModel:
         return p
 
 
-def build_from_brown() -> NgramModel:
-    """Build and return an NgramModel trained on the NLTK Brown corpus."""
+def build_from_brown(cache_path: str | None = None) -> NgramModel:
+    """Build and return an NgramModel trained on the NLTK Brown corpus.
+
+    Uses a cached pickle file if available to accelerate loading.
+    """
+    if cache_path is None:
+        cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
+        cache_path = os.path.join(cache_dir, "brown_ngram_cache.pkl")
+
+    if os.path.exists(cache_path):
+        try:
+            logger.info("Loading cached n-gram model from %s …", cache_path)
+            with open(cache_path, "rb") as fh:
+                model = pickle.load(fh)
+            if isinstance(model, NgramModel) and len(model.vocab) > 0:
+                return model
+        except Exception as e:
+            logger.warning("Could not load n-gram cache (%s), rebuilding: %s", cache_path, e)
+
     logger.info("Building n-gram model from Brown corpus …")
     model = NgramModel()
     model.train(brown.sents())
+
+    try:
+        os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+        with open(cache_path, "wb") as fh:
+            pickle.dump(model, fh, protocol=pickle.HIGHEST_PROTOCOL)
+        logger.info("Saved n-gram model cache to %s", cache_path)
+    except Exception as e:
+        logger.warning("Could not save n-gram cache to %s: %s", cache_path, e)
+
     return model

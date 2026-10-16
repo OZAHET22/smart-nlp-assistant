@@ -19,7 +19,16 @@ ENV/
 # Data and Models
 data/summary.csv
 *.csv
+*.pkl
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+.vercel
+*.tsbuildinfo
+next-env.d.ts

@@ -67,7 +67,22 @@ python pipeline.py --input test_samples/sample_01.txt --json
 python summarize.py
 ```
 
-### Launch the Streamlit web interface (stretch goal)
+### Launch the Next.js Enterprise Studio (Vercel-Ready Frontend)
+```bash
+# Install node dependencies
+npm install
+
+# Run the local Next.js dev server
+npm run dev
+# -> Opens http://localhost:3000
+
+# Production build for Vercel
+npm run build
+```
+
+See [VERCEL_DEPLOYMENT_GUIDE.md](file:///c:/Users/het22/Downloads/smart%20Reading%20and%20writing%20assistant/smart_assistant/VERCEL_DEPLOYMENT_GUIDE.md) for 1-click Vercel deployment instructions.
+
+### Launch the Streamlit web interface (Legacy Python UI)
 ```bash
 streamlit run app.py
 ```
