@@ -34,7 +34,7 @@ export function Stage4DiscourseTab({ result }: Stage4DiscourseTabProps) {
   return (
     <div className="animate-fade-in">
       {/* Top Grid: Coreference Chains & Pragmatic Speech Acts */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: "20px", marginBottom: "24px" }}>
         {/* Coreference Chains */}
         <div className="glass-panel">
           <div className="panel-header">

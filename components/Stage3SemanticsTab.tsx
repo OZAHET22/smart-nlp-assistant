@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Binary, Tag, UserCheck, BookOpen, Layers } from "lucide-react";
+import { Binary, Tag, UserCheck, BookOpen, Layers, ArrowRight, ArrowDown } from "lucide-react";
 import { PipelineResult, SemanticFrame } from "@/lib/nlp/types";
 
 interface Stage3SemanticsTabProps {
@@ -30,7 +30,7 @@ export function Stage3SemanticsTab({ result }: Stage3SemanticsTabProps) {
   return (
     <div className="animate-fade-in">
       {/* Top Section: Named Entity Recognition & WSD summary */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: "20px", marginBottom: "24px" }}>
         {/* Named Entities Card */}
         <div className="glass-panel">
           <div className="panel-header">
@@ -100,7 +100,7 @@ export function Stage3SemanticsTab({ result }: Stage3SemanticsTabProps) {
                     border: "1px solid var(--border-subtle)",
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px", flexWrap: "wrap", gap: "6px" }}>
                     <span style={{ fontWeight: "800", fontSize: "0.9rem", color: "var(--accent-cyan)" }}>
                       Target: "{word}"
                     </span>
@@ -134,7 +134,7 @@ export function Stage3SemanticsTab({ result }: Stage3SemanticsTabProps) {
           </h4>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           {result.semantic_frames.map((frame, idx) => (
             <div
               key={idx}
@@ -146,10 +146,10 @@ export function Stage3SemanticsTab({ result }: Stage3SemanticsTabProps) {
               }}
             >
               <div style={{ fontSize: "0.85rem", fontWeight: "600", marginBottom: "12px", color: "var(--text-primary)" }}>
-                Sentence {idx + 1}: "{frame.sentence}"
+                Sentence {idx + 1}: <em>"{frame.sentence}"</em>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))", gap: "10px" }}>
                 {/* Agent */}
                 <div style={{ padding: "10px", background: "var(--bg-input)", borderRadius: "6px", borderLeft: "3px solid var(--accent-primary)" }}>
                   <div style={{ fontSize: "0.68rem", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: "700", marginBottom: "2px" }}>

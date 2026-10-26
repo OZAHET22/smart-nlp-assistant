@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Grid, Sparkles, HelpCircle, ArrowRight, Table, Layers } from "lucide-react";
+import { Grid, Sparkles, HelpCircle, ArrowRight, Table, Layers, MoveHorizontal } from "lucide-react";
 import { PipelineResult, SpellCorrection, LevenshteinMatrixResult } from "@/lib/nlp/types";
 import { getLevenshteinMatrix } from "@/lib/nlp/stage1-spellcheck";
 
@@ -15,6 +15,14 @@ export function Stage1SpellTab({ result }: Stage1SpellTabProps) {
 
   const matrixData: LevenshteinMatrixResult = getLevenshteinMatrix(selectedWord1, selectedWord2);
 
+  const presets = [
+    { w1: "assigment", w2: "assignment" },
+    { w1: "recieve", w2: "receive" },
+    { w1: "definately", w2: "definitely" },
+    { w1: "thier", w2: "their" },
+    { w1: "seperate", w2: "separate" },
+  ];
+
   const handleSelectCorrection = (corr: SpellCorrection) => {
     setSelectedWord1(corr.original);
     setSelectedWord2(corr.corrected);
@@ -23,7 +31,7 @@ export function Stage1SpellTab({ result }: Stage1SpellTabProps) {
   return (
     <div className="animate-fade-in">
       {/* Overview Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "16px", marginBottom: "24px" }}>
         <div className="glass-panel" style={{ padding: "18px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
             <Sparkles size={16} style={{ color: "var(--accent-primary)" }} />
@@ -53,7 +61,7 @@ export function Stage1SpellTab({ result }: Stage1SpellTabProps) {
             Detected Spelling Corrections ({result?.corrections.length || 0})
           </h3>
           <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-            Click any row to view its Levenshtein Dynamic Programming Grid
+            Tap any row to inspect its dynamic programming cost grid
           </span>
         </div>
 
@@ -105,6 +113,7 @@ export function Stage1SpellTab({ result }: Stage1SpellTabProps) {
                     </td>
                     <td>
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSelectCorrection(corr);
@@ -134,12 +143,13 @@ export function Stage1SpellTab({ result }: Stage1SpellTabProps) {
             <Grid size={16} style={{ color: "var(--accent-emerald)" }} />
             Interactive Levenshtein DP Matrix Explorer
           </h3>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", width: "100%", maxWidth: "460px" }}>
             <input
               type="text"
               value={selectedWord1}
               onChange={(e) => setSelectedWord1(e.target.value)}
               placeholder="Word 1"
+              aria-label="First word for Levenshtein comparison"
               style={{
                 background: "var(--bg-input)",
                 border: "1px solid var(--border-medium)",
@@ -147,15 +157,16 @@ export function Stage1SpellTab({ result }: Stage1SpellTabProps) {
                 padding: "6px 10px",
                 borderRadius: "var(--radius-sm)",
                 fontSize: "0.82rem",
-                width: "120px",
+                flex: "1 1 110px",
               }}
             />
-            <span style={{ color: "var(--text-muted)" }}>vs</span>
+            <span style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>vs</span>
             <input
               type="text"
               value={selectedWord2}
               onChange={(e) => setSelectedWord2(e.target.value)}
               placeholder="Word 2"
+              aria-label="Second word for Levenshtein comparison"
               style={{
                 background: "var(--bg-input)",
                 border: "1px solid var(--border-medium)",
@@ -163,18 +174,43 @@ export function Stage1SpellTab({ result }: Stage1SpellTabProps) {
                 padding: "6px 10px",
                 borderRadius: "var(--radius-sm)",
                 fontSize: "0.82rem",
-                width: "120px",
+                flex: "1 1 110px",
               }}
             />
           </div>
         </div>
 
-        <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "16px" }}>
-          Dynamic programming cost table between <strong>"{selectedWord1}"</strong> and <strong>"{selectedWord2}"</strong>. Total minimum edit distance: <strong>{matrixData.distance}</strong> operations.
+        {/* Quick presets */}
+        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "12px", alignItems: "center" }}>
+          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: "600" }}>Quick Presets:</span>
+          {presets.map((p, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                setSelectedWord1(p.w1);
+                setSelectedWord2(p.w2);
+              }}
+              className="btn btn-secondary btn-sm"
+              style={{ fontSize: "0.72rem", padding: "3px 8px" }}
+            >
+              {p.w1} → {p.w2}
+            </button>
+          ))}
+        </div>
+
+        <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "14px" }}>
+          Cost table between <strong>"{selectedWord1}"</strong> and <strong>"{selectedWord2}"</strong>. Total minimum edit distance: <strong>{matrixData.distance}</strong> operations.
         </p>
 
+        {/* Mobile Swipe Hint */}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--accent-cyan)", fontSize: "0.74rem", marginBottom: "8px" }}>
+          <MoveHorizontal size={14} />
+          <span>Swipe horizontally on mobile/tablet to explore entire cost matrix</span>
+        </div>
+
         {/* Matrix Render */}
-        <div style={{ overflowX: "auto", paddingBottom: "12px" }}>
+        <div className="table-responsive" style={{ padding: "8px 4px", border: "1px solid var(--border-subtle)" }}>
           <table style={{ borderCollapse: "separate", borderSpacing: "4px", margin: "0 auto" }}>
             <thead>
               <tr>
@@ -203,12 +239,11 @@ export function Stage1SpellTab({ result }: Stage1SpellTabProps) {
                 <tr key={rowIdx}>
                   <td className="matrix-cell header">{char1}</td>
                   {matrixData.matrix[rowIdx + 1]?.map((val, colIdx) => {
-                    // Check if on backtrace path
-                    const isOptimal = rowIdx + 1 === colIdx && Math.abs(val - colIdx) <= 1;
+                    const isLast = rowIdx + 1 === selectedWord1.length && colIdx === selectedWord2.length;
                     return (
                       <td
                         key={colIdx}
-                        className={`matrix-cell ${rowIdx + 1 === selectedWord1.length && colIdx === selectedWord2.length ? "highlight" : ""}`}
+                        className={`matrix-cell ${isLast ? "highlight" : ""}`}
                         title={`Cost at (${rowIdx + 1}, ${colIdx}): ${val}`}
                       >
                         {val}
@@ -224,7 +259,7 @@ export function Stage1SpellTab({ result }: Stage1SpellTabProps) {
         {/* Backtrace Operations Flow */}
         <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px solid var(--border-subtle)" }}>
           <div style={{ fontSize: "0.78rem", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "8px" }}>
-            Sequence of Edit Operations:
+            Sequence of Edit Operations ({matrixData.operations.length}):
           </div>
           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", alignItems: "center" }}>
             {matrixData.operations.map((op, idx) => (

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { GitBranch, Info, CheckCircle2, AlertCircle, FileCode2 } from "lucide-react";
+import { GitBranch, Info, CheckCircle2, AlertCircle, FileCode2, Copy, Check } from "lucide-react";
 import { PipelineResult, SentenceParse } from "@/lib/nlp/types";
 
 interface Stage2SyntaxTabProps {
@@ -10,6 +10,7 @@ interface Stage2SyntaxTabProps {
 
 export function Stage2SyntaxTab({ result }: Stage2SyntaxTabProps) {
   const [selectedSentIdx, setSelectedSentIdx] = useState<number>(0);
+  const [copied, setCopied] = useState<boolean>(false);
 
   if (!result || result.sentence_parses.length === 0) {
     return (
@@ -22,6 +23,12 @@ export function Stage2SyntaxTab({ result }: Stage2SyntaxTabProps) {
   }
 
   const currentParse = result.sentence_parses[selectedSentIdx] || result.sentence_parses[0];
+
+  const handleCopyTree = () => {
+    navigator.clipboard.writeText(currentParse.cyk_parse_string);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const getPosBadgeClass = (category: string) => {
     switch (category) {
@@ -45,16 +52,18 @@ export function Stage2SyntaxTab({ result }: Stage2SyntaxTabProps) {
             Select Sentence for Detailed Syntactic Analysis ({result.sentence_parses.length})
           </h3>
         </div>
-        <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "6px" }}>
+        <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "6px", WebkitOverflowScrolling: "touch" }}>
           {result.sentence_parses.map((sp, idx) => (
             <button
               key={idx}
+              type="button"
               onClick={() => setSelectedSentIdx(idx)}
               className={`btn ${selectedSentIdx === idx ? "btn-primary" : "btn-secondary"} btn-sm`}
               style={{ whiteSpace: "nowrap" }}
             >
               {sp.is_valid_cfg ? <CheckCircle2 size={13} style={{ color: "var(--accent-emerald)" }} /> : <Info size={13} />}
-              <span>Sent {idx + 1}: "{sp.sentence.slice(0, 24)}..."</span>
+              <span className="hide-on-mobile">Sent {idx + 1}: "{sp.sentence.slice(0, 24)}..."</span>
+              <span className="show-on-mobile">Sent {idx + 1}</span>
             </button>
           ))}
         </div>
@@ -64,12 +73,14 @@ export function Stage2SyntaxTab({ result }: Stage2SyntaxTabProps) {
         {/* Token-by-Token POS & Dependency Table */}
         <div className="glass-panel">
           <div className="panel-header">
-            <h4 style={{ fontSize: "1rem", fontWeight: "700" }}>
-              Token Analysis & Dependency Relations (Sentence {selectedSentIdx + 1})
-            </h4>
-            <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-              Full sentence: "{currentParse.sentence}"
-            </span>
+            <div>
+              <h4 style={{ fontSize: "1rem", fontWeight: "700" }}>
+                Token Analysis & Dependency Relations (Sentence {selectedSentIdx + 1})
+              </h4>
+              <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "4px" }}>
+                Full sentence: <em>"{currentParse.sentence}"</em>
+              </p>
+            </div>
           </div>
 
           <div className="table-responsive">
@@ -121,23 +132,34 @@ export function Stage2SyntaxTab({ result }: Stage2SyntaxTabProps) {
               <FileCode2 size={16} style={{ color: "var(--accent-cyan)" }} />
               Custom CYK Chart Parser Tree (Cocke-Younger-Kasami)
             </h4>
-            <span
-              className="badge-pill"
-              style={{
-                background: currentParse.is_valid_cfg ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)",
-                borderColor: currentParse.is_valid_cfg ? "rgba(16, 185, 129, 0.3)" : "rgba(245, 158, 11, 0.3)",
-                color: currentParse.is_valid_cfg ? "var(--accent-emerald)" : "var(--accent-amber)",
-              }}
-            >
-              {currentParse.is_valid_cfg ? "Valid 15-Rule CFG Tree" : "Outside Simple CFG Grammar"}
-            </span>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <button
+                type="button"
+                onClick={handleCopyTree}
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: "0.74rem" }}
+              >
+                {copied ? <Check size={12} style={{ color: "var(--accent-emerald)" }} /> : <Copy size={12} />}
+                <span>{copied ? "Copied" : "Copy Tree"}</span>
+              </button>
+              <span
+                className="badge-pill"
+                style={{
+                  background: currentParse.is_valid_cfg ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)",
+                  borderColor: currentParse.is_valid_cfg ? "rgba(16, 185, 129, 0.3)" : "rgba(245, 158, 11, 0.3)",
+                  color: currentParse.is_valid_cfg ? "var(--accent-emerald)" : "var(--accent-amber)",
+                }}
+              >
+                {currentParse.is_valid_cfg ? "Valid CFG Tree" : "Outside CFG"}
+              </span>
+            </div>
           </div>
 
           <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "14px" }}>
             The hand-built CYK parser uses a 15-rule Context-Free Grammar covering simple declarative sentences (<code>S → NP VP</code>, <code>NP → DT NN</code>, <code>VP → VBD NP PP</code>).
           </p>
 
-          <div className="code-block" style={{ fontSize: "0.88rem" }}>
+          <div className="code-block" style={{ fontSize: "0.85rem" }}>
             {currentParse.cyk_parse_string}
           </div>
 

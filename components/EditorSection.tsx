@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Play, Sparkles, RotateCcw, Check, ArrowRight, Wand2, BookOpen, Clock, Activity, FileText } from "lucide-react";
+import { Play, Sparkles, RotateCcw, Check, ArrowRight, Wand2, BookOpen, Clock, Activity, FileText, Copy, Columns, Edit3, CheckCircle2 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { PipelineResult, TestSample } from "@/lib/nlp/types";
 import { TEST_SAMPLES } from "@/lib/nlp/samples-data";
@@ -26,6 +26,8 @@ export function EditorSection({
   onApplyAll,
 }: EditorSectionProps) {
   const [selectedSampleId, setSelectedSampleId] = useState<string>("sample_01");
+  const [mobileView, setMobileView] = useState<"split" | "input" | "output">("split");
+  const [copied, setCopied] = useState<boolean>(false);
 
   const handleSelectSample = (sampleId: string) => {
     setSelectedSampleId(sampleId);
@@ -48,15 +50,22 @@ export function EditorSection({
     }
   };
 
+  const handleCopyOutput = () => {
+    if (!result) return;
+    navigator.clipboard.writeText(result.corrected_text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const currentSample = TEST_SAMPLES.find((s) => s.id === selectedSampleId);
 
   return (
     <div className="glass-panel" style={{ marginBottom: "24px" }}>
       {/* Top Controls: Preset selector & Action buttons */}
       <div className="panel-header">
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-secondary)" }}>
-            Preset Samples:
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", width: "100%", maxWidth: "700px" }}>
+          <span style={{ fontSize: "0.82rem", fontWeight: "700", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
+            Sample Presets:
           </span>
           <select
             value={selectedSampleId}
@@ -71,6 +80,8 @@ export function EditorSection({
               fontWeight: "600",
               outline: "none",
               cursor: "pointer",
+              maxWidth: "100%",
+              flex: "1 1 200px",
             }}
           >
             {TEST_SAMPLES.map((s) => (
@@ -81,17 +92,18 @@ export function EditorSection({
           </select>
 
           {currentSample && (
-            <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", maxWidth: "400px" }}>
+            <span className="hide-on-mobile" style={{ fontSize: "0.78rem", color: "var(--text-muted)", maxWidth: "340px" }}>
               {currentSample.description}
             </span>
           )}
         </div>
 
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", width: "100%", justifyContent: "flex-end" }}>
           <button
             onClick={() => setInputText("")}
             className="btn btn-secondary btn-sm"
             title="Clear editor"
+            type="button"
           >
             Clear
           </button>
@@ -100,10 +112,56 @@ export function EditorSection({
             onClick={onProcess}
             disabled={loading || !inputText.trim()}
             className="btn btn-primary"
-            style={{ padding: "8px 20px" }}
+            style={{ padding: "8px 18px" }}
+            type="button"
           >
             {loading ? <RotateCcw size={15} className="animate-spin" /> : <Play size={15} />}
-            <span>{loading ? "Running Pipeline..." : "Process Text"}</span>
+            <span>{loading ? "Analyzing..." : "Process Text"}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile-Only View Switcher (Input vs Polished vs Split) */}
+      <div className="show-on-mobile" style={{ marginBottom: "12px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "4px",
+            background: "var(--bg-secondary)",
+            padding: "3px",
+            borderRadius: "var(--radius-sm)",
+            border: "1px solid var(--border-subtle)",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setMobileView("split")}
+            className={`btn btn-sm ${mobileView === "split" ? "btn-primary" : "btn-secondary"}`}
+            style={{ padding: "6px 8px", fontSize: "0.74rem", border: "none" }}
+          >
+            <Columns size={12} />
+            <span>Split</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMobileView("input")}
+            className={`btn btn-sm ${mobileView === "input" ? "btn-primary" : "btn-secondary"}`}
+            style={{ padding: "6px 8px", fontSize: "0.74rem", border: "none" }}
+          >
+            <Edit3 size={12} />
+            <span>Input</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMobileView("output")}
+            className={`btn btn-sm ${mobileView === "output" ? "btn-primary" : "btn-secondary"}`}
+            style={{ padding: "6px 8px", fontSize: "0.74rem", border: "none" }}
+          >
+            <Sparkles size={12} />
+            <span>Output ({result?.corrections.length || 0})</span>
           </button>
         </div>
       </div>
@@ -111,52 +169,72 @@ export function EditorSection({
       {/* Editor & Side-by-side Diff View */}
       <div className="editor-wrapper">
         {/* Left: Input Text Box */}
-        <div className="editor-box">
-          <div className="editor-header">
-            <span>Raw Student Input Text</span>
-            <span>{inputText.length} chars</span>
+        {(mobileView === "split" || mobileView === "input") && (
+          <div className="editor-box">
+            <div className="editor-header">
+              <span>Raw Student Input</span>
+              <span>{inputText.length} chars</span>
+            </div>
+            <textarea
+              className="textarea-clean"
+              placeholder="Type or paste messy student text here..."
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              aria-label="Student input text"
+            />
           </div>
-          <textarea
-            className="textarea-clean"
-            placeholder="Type or paste messy student text here..."
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-          />
-        </div>
+        )}
 
         {/* Right: Live Correction & Diff View */}
-        <div className="editor-box">
-          <div className="editor-header">
-            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <Sparkles size={14} style={{ color: "var(--accent-primary)" }} />
-              Corrected & Polished Output
-            </span>
-            {result && result.corrections.length > 0 && (
-              <button
-                onClick={handleTriggerConfetti}
-                className="btn btn-secondary btn-sm"
-                style={{
-                  fontSize: "0.72rem",
-                  padding: "3px 8px",
-                  borderColor: "rgba(16, 185, 129, 0.4)",
-                  color: "var(--accent-emerald)",
-                }}
-              >
-                <Check size={12} /> Apply All ({result.corrections.length})
-              </button>
+        {(mobileView === "split" || mobileView === "output") && (
+          <div className="editor-box">
+            <div className="editor-header">
+              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Sparkles size={14} style={{ color: "var(--accent-primary)" }} />
+                Corrected & Polished Output
+              </span>
+              <div style={{ display: "flex", gap: "6px" }}>
+                {result && (
+                  <button
+                    onClick={handleCopyOutput}
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: "0.72rem", padding: "3px 8px" }}
+                    title="Copy corrected text"
+                    type="button"
+                  >
+                    {copied ? <Check size={12} style={{ color: "var(--accent-emerald)" }} /> : <Copy size={12} />}
+                    <span>{copied ? "Copied" : "Copy"}</span>
+                  </button>
+                )}
+                {result && result.corrections.length > 0 && (
+                  <button
+                    onClick={handleTriggerConfetti}
+                    className="btn btn-secondary btn-sm"
+                    style={{
+                      fontSize: "0.72rem",
+                      padding: "3px 8px",
+                      borderColor: "rgba(16, 185, 129, 0.4)",
+                      color: "var(--accent-emerald)",
+                    }}
+                    type="button"
+                  >
+                    <Check size={12} /> Apply All ({result.corrections.length})
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {result ? (
+              <div className="diff-display">
+                {result.corrected_text}
+              </div>
+            ) : (
+              <div style={{ minHeight: "220px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: "0.88rem" }}>
+                Click "Process Text" to run the 5-stage NLP pipeline.
+              </div>
             )}
           </div>
-
-          {result ? (
-            <div className="diff-display">
-              {result.corrected_text}
-            </div>
-          ) : (
-            <div style={{ minHeight: "220px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: "0.88rem" }}>
-              Click "Process Text" to run the 5-stage NLP pipeline.
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Quick Corrections Pill Bar */}
@@ -191,6 +269,7 @@ export function EditorSection({
                   {corr.reason === "context_ngram" ? "n-gram" : `d=${corr.edit_distance}`}
                 </span>
                 <button
+                  type="button"
                   onClick={() => onApplyCorrection(corr.original, corr.corrected)}
                   style={{
                     background: "transparent",
@@ -199,8 +278,10 @@ export function EditorSection({
                     color: "var(--accent-emerald)",
                     display: "flex",
                     alignItems: "center",
+                    padding: "2px",
                   }}
-                  title="Apply correction"
+                  title={`Apply "${corr.corrected}"`}
+                  aria-label={`Apply correction: replace ${corr.original} with ${corr.corrected}`}
                 >
                   <Check size={13} />
                 </button>
@@ -228,8 +309,8 @@ export function EditorSection({
           </div>
 
           <div className="metric-card">
-            <span className="metric-label">Tone & Sentiment</span>
-            <span className="metric-value" style={{ fontSize: "1rem" }}>{result.metrics.sentiment_tone}</span>
+            <span className="metric-label">Tone & Style</span>
+            <span className="metric-value" style={{ fontSize: "0.95rem" }}>{result.metrics.sentiment_tone}</span>
             <span className="metric-sub">Communication style</span>
           </div>
 

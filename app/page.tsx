@@ -80,13 +80,13 @@ export default function Home() {
   };
 
   const tabs = [
-    { id: "editor", label: "Smart Editor & Diff", icon: Sparkles },
-    { id: "stage1", label: "Stage 1: Spell & Levenshtein", icon: SpellCheck, count: result?.corrections.length },
-    { id: "stage2", label: "Stage 2: Syntax & CYK Parser", icon: GitBranch, count: result?.sentence_parses.length },
-    { id: "stage3", label: "Stage 3: Semantics & WSD", icon: Binary, count: result?.semantic_frames.length },
-    { id: "stage4", label: "Stage 4: Discourse & Pragmatics", icon: MessageSquareShare, count: result?.discourse_relations.length },
-    { id: "stage5", label: "Stage 5: Export Studio", icon: FileSpreadsheet },
-    { id: "benchmarks", label: "Benchmarks Suite", icon: Activity, count: "10" },
+    { id: "editor", label: "Smart Editor & Diff", shortLabel: "Editor", icon: Sparkles },
+    { id: "stage1", label: "Stage 1: Spell & DP Matrix", shortLabel: "1. Spell", icon: SpellCheck, count: result?.corrections.length },
+    { id: "stage2", label: "Stage 2: Syntax & CYK", shortLabel: "2. Syntax", icon: GitBranch, count: result?.sentence_parses.length },
+    { id: "stage3", label: "Stage 3: Semantics & WSD", shortLabel: "3. Semantics", icon: Binary, count: result?.semantic_frames.length },
+    { id: "stage4", label: "Stage 4: Discourse & Coref", shortLabel: "4. Discourse", icon: MessageSquareShare, count: result?.discourse_relations.length },
+    { id: "stage5", label: "Stage 5: Export Studio", shortLabel: "5. Export", icon: FileSpreadsheet },
+    { id: "benchmarks", label: "Benchmarks Suite", shortLabel: "Benchmarks", icon: Activity, count: "10" },
   ];
 
   return (
@@ -96,35 +96,70 @@ export default function Home() {
       <main className="container">
         <HeroBanner activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {/* Navigation Tabs */}
-        <div className="tabs-nav">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`tab-btn ${isActive ? "active" : ""}`}
-              >
-                <Icon size={15} />
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span
-                    style={{
-                      fontSize: "0.68rem",
-                      background: isActive ? "var(--accent-primary)" : "var(--bg-tertiary)",
-                      color: isActive ? "#ffffff" : "var(--text-secondary)",
-                      padding: "1px 6px",
-                      borderRadius: "10px",
-                    }}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        {/* Mobile Quick Stage Selector Dropdown */}
+        <div className="mobile-stage-selector show-on-mobile" style={{ marginBottom: "14px" }}>
+          <label style={{ fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
+            Current Active View:
+          </label>
+          <select
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: "var(--radius-sm)",
+              background: "var(--bg-secondary)",
+              border: "1px solid var(--border-medium)",
+              color: "var(--text-primary)",
+              fontWeight: "600",
+              fontSize: "0.9rem",
+              fontFamily: "inherit",
+              outline: "none",
+            }}
+          >
+            {tabs.map((tab) => (
+              <option key={tab.id} value={tab.id}>
+                {tab.shortLabel} {tab.count !== undefined ? `(${tab.count})` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Navigation Tabs - Horizontal Scroll on Tablet/Mobile */}
+        <div className="tabs-nav-wrapper">
+          <div className="tabs-nav" role="tablist">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`tab-btn ${isActive ? "active" : ""}`}
+                >
+                  <Icon size={15} />
+                  <span className="hide-on-mobile">{tab.label}</span>
+                  <span className="show-on-mobile">{tab.shortLabel}</span>
+                  {tab.count !== undefined && (
+                    <span
+                      style={{
+                        fontSize: "0.68rem",
+                        background: isActive ? "var(--accent-primary)" : "var(--bg-tertiary)",
+                        color: isActive ? "#ffffff" : "var(--text-secondary)",
+                        padding: "1px 6px",
+                        borderRadius: "10px",
+                        fontWeight: "700",
+                      }}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Tab Contents */}

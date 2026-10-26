@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Play, CheckCircle2, RotateCcw, Activity, Award, Check } from "lucide-react";
+import { Play, CheckCircle2, RotateCcw, Activity, Award, Check, MoveHorizontal } from "lucide-react";
 import { BenchmarkResult } from "@/lib/nlp/types";
 import { runBatchBenchmark } from "@/lib/nlp/stage5-pipeline";
 
@@ -32,14 +32,16 @@ export function BenchmarkStudioTab() {
               10-Sample Automated Benchmark Suite
             </h3>
             <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginTop: "4px" }}>
-              Executes the full continuous NLP pipeline across all 10 student test samples and evaluates throughput, corrections, CYK parsing, and discourse extraction.
+              Executes continuous pipeline across all 10 student test samples: throughput, corrections, CYK parsing, and discourse extraction.
             </p>
           </div>
 
           <button
+            type="button"
             onClick={handleRunBenchmarks}
             disabled={running}
             className="btn btn-primary"
+            style={{ width: "100%", maxWidth: "240px" }}
           >
             {running ? <RotateCcw size={15} className="animate-spin" /> : <Play size={15} />}
             <span>{running ? "Benchmarking..." : "Run All 10 Benchmarks"}</span>
@@ -54,12 +56,12 @@ export function BenchmarkStudioTab() {
               <span className="metric-sub">100% pipeline health</span>
             </div>
             <div className="metric-card">
-              <span className="metric-label">Total Words Tested</span>
+              <span className="metric-label">Total Words</span>
               <span className="metric-value">{totalWords}</span>
               <span className="metric-sub">Across 10 samples</span>
             </div>
             <div className="metric-card">
-              <span className="metric-label">Total Corrections</span>
+              <span className="metric-label">Corrections</span>
               <span className="metric-value">{totalCorrections}</span>
               <span className="metric-sub">Spelling & context</span>
             </div>
@@ -71,9 +73,16 @@ export function BenchmarkStudioTab() {
           </div>
         )}
 
+        {benchmarks && (
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--accent-cyan)", fontSize: "0.74rem", marginBottom: "8px" }}>
+            <MoveHorizontal size={14} />
+            <span>Swipe horizontally to view all 11 evaluation metrics across samples</span>
+          </div>
+        )}
+
         {benchmarks ? (
           <div className="table-responsive">
-            <table className="data-table">
+            <table className="data-table" style={{ minWidth: "750px" }}>
               <thead>
                 <tr>
                   <th>Sample ID</th>
